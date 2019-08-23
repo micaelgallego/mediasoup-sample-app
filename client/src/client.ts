@@ -1,13 +1,13 @@
-const mediasoup = require('mediasoup-client');
-const socketClient = require('socket.io-client');
-const socketPromise = require('./lib/socket.io-promise').promise;
-const config = require('./config');
+import mediasoup, { Device, Transport, RtpCapabilities, ProducerOptions } from 'mediasoup-client';
+import socketClient from 'socket.io-client';
+import socketPromise from './socket.io-promise';
 
 const hostname = window.location.hostname;
 
-let device;
-let socket;
-let producer;
+let device: Device;
+let socket: SocketIOClient.Socket;
+let request: (...req: any) => Promise<any>;
+//let producer;
 
 const $ = document.querySelector.bind(document);
 const $fsPublish = $('#fs_publish');
@@ -21,14 +21,14 @@ const $txtConnection = $('#connection_status');
 const $txtWebcam = $('#webcam_status');
 const $txtScreen = $('#screen_status');
 const $txtSubscription = $('#sub_status');
-let $txtPublish;
+let $txtPublish: any;
 
 $btnConnect.addEventListener('click', connect);
 $btnWebcam.addEventListener('click', publish);
 $btnScreen.addEventListener('click', publish);
 $btnSubscribe.addEventListener('click', subscribe);
 
-if (typeof navigator.mediaDevices.getDisplayMedia === 'undefined') {
+if ((navigator.mediaDevices as any).getDisplayMedia === 'undefined') {
   $txtScreen.innerHTML = 'Not supported';
   $btnScreen.disabled = true;
 }
@@ -42,16 +42,17 @@ async function connect() {
     transports: ['websocket'],
   };
 
-  const serverUrl = `https://${hostname}:${config.listenPort}`;
+  const serverUrl = `https://${hostname}:3000`;
   socket = socketClient(serverUrl, opts);
-  socket.request = socketPromise(socket);
+  request = socketPromise(socket);
 
   socket.on('connect', async () => {
     $txtConnection.innerHTML = 'Connected';
     $fsPublish.disabled = false;
     $fsSubscribe.disabled = false;
 
-    const data = await socket.request('getRouterRtpCapabilities');
+    const data = await request('getRouterRtpCapabilities');
+    console.log(data);
     await loadDevice(data);
   });
 
@@ -62,7 +63,7 @@ async function connect() {
     $fsSubscribe.disabled = true;
   });
 
-  socket.on('connect_error', (error) => {
+  socket.on('connect_error', (error: any) => {
     console.error('could not connect to %s%s (%s)', serverUrl, opts.path, error.message);
     $txtConnection.innerHTML = 'Connection failed';
     $btnConnect.disabled = false;
@@ -73,7 +74,7 @@ async function connect() {
   });
 }
 
-async function loadDevice(routerRtpCapabilities) {
+async function loadDevice(routerRtpCapabilities: RtpCapabilities) {
   try {
     device = new mediasoup.Device();
   } catch (error) {
@@ -84,11 +85,11 @@ async function loadDevice(routerRtpCapabilities) {
   await device.load({ routerRtpCapabilities });
 }
 
-async function publish(e) {
+async function publish(e: any) {
   const isWebcam = (e.target.id === 'btn_webcam');
   $txtPublish = isWebcam ? $txtWebcam : $txtScreen;
 
-  const data = await socket.request('createProducerTransport', {
+  const data = await request('createProducerTransport', {
     forceTcp: false,
     rtpCapabilities: device.rtpCapabilities,
   });
@@ -97,16 +98,16 @@ async function publish(e) {
     return;
   }
 
-  const transport = device.createSendTransport(data);
+  const transport = device.createSendTransport(data); //I've added await here. Verify if it works in runtime.
   transport.on('connect', async ({ dtlsParameters }, callback, errback) => {
-    socket.request('connectProducerTransport', { dtlsParameters })
+    request('connectProducerTransport', { dtlsParameters })
       .then(callback)
       .catch(errback);
   });
 
   transport.on('produce', async ({ kind, rtpParameters }, callback, errback) => {
     try {
-      const { id } = await socket.request('produce', {
+      const { id } = await request('produce', {
         transportId: transport.id,
         kind,
         rtpParameters,
@@ -126,7 +127,6 @@ async function publish(e) {
       break;
 
       case 'connected':
-        document.querySelector('#local_video').srcObject = stream;
         $txtPublish.innerHTML = 'published';
         $fsPublish.disabled = true;
         $fsSubscribe.disabled = false;
@@ -143,15 +143,17 @@ async function publish(e) {
     }
   });
 
-  let stream;
+  let stream: MediaStream;
   try {
     stream = await getUserMedia(transport, isWebcam);
+    let video: HTMLVideoElement = document.querySelector('#local_video');
+  video.srcObject = stream;
   } catch (err) {
     $txtPublish.innerHTML = 'failed';
   }
 }
 
-async function getUserMedia(transport, isWebcam) {
+async function getUserMedia(transport: Transport, isWebcam: boolean) {
   if (!device.canProduce('video')) {
     console.error('cannot produce video');
     return;
@@ -161,13 +163,13 @@ async function getUserMedia(transport, isWebcam) {
   try {
     stream = isWebcam ?
       await navigator.mediaDevices.getUserMedia({ video: true }) :
-      await navigator.mediaDevices.getDisplayMedia({ video: true });
+      await (navigator.mediaDevices as any).getDisplayMedia({ video: true });
   } catch (err) {
     console.error('starting webcam failed,', err.message);
     throw err;
   }
   const track = stream.getVideoTracks()[0];
-  const params = { track };
+  const params: ProducerOptions = { track };
   if ($chkSimulcast.checked) {
     params.encodings = [
       { maxBitrate: 100000 },
@@ -178,12 +180,12 @@ async function getUserMedia(transport, isWebcam) {
       videoGoogleStartBitrate : 1000
     };
   }
-  producer = await transport.produce(params);
+  await transport.produce(params);
   return stream;
 }
 
 async function subscribe() {
-  const data = await socket.request('createConsumerTransport', {
+  const data = await request('createConsumerTransport', {
     forceTcp: false,
   });
   if (data.error) {
@@ -191,9 +193,9 @@ async function subscribe() {
     return;
   }
 
-  const transport = device.createRecvTransport(data);
+  const transport = await device.createRecvTransport(data);
   transport.on('connect', ({ dtlsParameters }, callback, errback) => {
-    socket.request('connectConsumerTransport', {
+    request('connectConsumerTransport', {
       transportId: transport.id,
       dtlsParameters
     })
@@ -209,7 +211,6 @@ async function subscribe() {
         break;
 
       case 'connected':
-        document.querySelector('#remote_video').srcObject = stream;
         $txtSubscription.innerHTML = 'subscribed';
         $fsSubscribe.disabled = true;
         break;
@@ -225,12 +226,14 @@ async function subscribe() {
   });
 
   const stream = await consume(transport);
-  socket.request('resume');
+  let video: HTMLVideoElement = document.querySelector('#remote_video');
+  video.srcObject = stream;
+  request('resume');
 }
 
-async function consume(transport) {
+async function consume(transport: Transport) {
   const { rtpCapabilities } = device;
-  const data = await socket.request('consume', { rtpCapabilities });
+  const data = await request('consume', { rtpCapabilities });
   const {
     producerId,
     id,
@@ -238,13 +241,13 @@ async function consume(transport) {
     rtpParameters,
   } = data;
 
-  let codecOptions = {};
+  //let codecOptions = {};
   const consumer = await transport.consume({
     id,
     producerId,
     kind,
     rtpParameters,
-    codecOptions,
+    //codecOptions,
   });
   const stream = new MediaStream();
   stream.addTrack(consumer.track);

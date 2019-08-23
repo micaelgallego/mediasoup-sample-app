@@ -1,0 +1,20 @@
+{
+  "name": "mediasoup-sample-app",
+  "version": "1.2.0",
+  "description": "Mediasoup Sample App",
+  "scripts": {
+    "start": "npm --prefix ../client/ run compile && tsc && node build/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.17.1",
+    "@types/socket.io": "^2.1.2",
+    "express": "^4.16.4",
+    "mediasoup": "latest",
+    "socket.io": "^2.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^3.5.3"
+  }
+}

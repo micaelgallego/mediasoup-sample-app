@@ -1,20 +1,20 @@
-const mediasoup = require('mediasoup');
-const fs = require('fs');
-const https = require('https');
-const express = require('express');
-const socketIO = require('socket.io');
-const config = require('./config');
+import mediasoup, { Worker, Producer, Consumer, WebRtcTransport, Router, RtpCapabilities, TransportListenIp } from 'mediasoup';
+import fs from 'fs';
+import https, { Server } from 'https';
+import express, { Express, NextFunction, Request, Response } from "express";
+import socketIO from 'socket.io';
+import config from './config';
 
 // Global variables
-let worker;
-let webServer;
-let socketServer;
-let expressApp;
-let producer;
-let consumer;
-let producerTransport;
-let consumerTransport;
-let mediasoupRouter;
+let worker: Worker;
+let webServer: Server;
+let socketServer: socketIO.Server;
+let expressApp: Express;
+let producer: Producer;
+let consumer: Consumer;
+let producerTransport: WebRtcTransport;
+let consumerTransport: WebRtcTransport;
+let mediasoupRouter: Router;
 
 (async () => {
   try {
@@ -30,9 +30,9 @@ let mediasoupRouter;
 async function runExpressApp() {
   expressApp = express();
   expressApp.use(express.json());
-  expressApp.use(express.static(__dirname));
+  expressApp.use(express.static(__dirname + "/../../client/static"));
 
-  expressApp.use((error, req, res, next) => {
+  expressApp.use((error: any, req: Request, res: Response, next: NextFunction) => {
     if (error) {
       console.warn('Express app error,', error.message);
 
@@ -48,6 +48,7 @@ async function runExpressApp() {
 
 async function runWebServer() {
   const { sslKey, sslCrt } = config;
+  console.log(sslKey);
   if (!fs.existsSync(sslKey) || !fs.existsSync(sslCrt)) {
     console.error('SSL files are not found. check your config.js file');
     process.exit(0);
@@ -64,7 +65,7 @@ async function runWebServer() {
   await new Promise((resolve) => {
     const { listenIp, listenPort } = config;
     webServer.listen(listenPort, listenIp, () => {
-      const listenIps = config.mediasoup.webRtcTransport.listenIps[0];
+      const listenIps = config.mediasoup.webRtcTransport.listenIps as TransportListenIp;
       const ip = listenIps.announcedIp || listenIps.ip;
       console.log('server is running');
       console.log(`open https//${ip}:${listenPort} in your web browser`);
@@ -77,7 +78,7 @@ async function runSocketServer() {
   socketServer = socketIO(webServer, {
     serveClient: false,
     path: '/server',
-    log: false,
+    //log: false, //It seems not recognized for socketIO Typings. Maybe are outdated?
   });
 
   socketServer.on('connection', (socket) => {
@@ -133,7 +134,7 @@ async function runSocketServer() {
     });
 
     socket.on('produce', async (data, callback) => {
-      const {kind, rtpParameters} = data;
+      const { kind, rtpParameters } = data;
       producer = await producerTransport.produce({ kind, rtpParameters });
       callback({ id: producer.id });
 
@@ -170,10 +171,9 @@ async function runMediasoupWorker() {
 }
 
 async function createWebRtcTransport() {
-  const {
-    maxIncomingBitrate,
-    initialAvailableOutgoingBitrate
-  } = config.mediasoup.webRtcTransport;
+
+  const maxIncomingBitrate = config.webRtcTransportAdditionalOptions.maxIncomingBitrate;
+  const initialAvailableOutgoingBitrate = config.mediasoup.webRtcTransport.initialAvailableOutgoingBitrate;
 
   const transport = await mediasoupRouter.createWebRtcTransport({
     listenIps: config.mediasoup.webRtcTransport.listenIps,
@@ -182,7 +182,7 @@ async function createWebRtcTransport() {
     preferUdp: true,
     initialAvailableOutgoingBitrate,
   });
-  if (maxIncomingBitrate) {
+  if (config.webRtcTransportAdditionalOptions.maxIncomingBitrate) {
     try {
       await transport.setMaxIncomingBitrate(maxIncomingBitrate);
     } catch (error) {
@@ -199,7 +199,7 @@ async function createWebRtcTransport() {
   };
 }
 
-async function createConsumer(producer, rtpCapabilities) {
+async function createConsumer(producer: Producer, rtpCapabilities: RtpCapabilities) {
   if (!mediasoupRouter.canConsume(
     {
       producerId: producer.id,

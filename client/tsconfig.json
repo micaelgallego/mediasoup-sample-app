@@ -1,0 +1,24 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "commonjs",
+        "lib": [ "dom", "es2015" ],
+        "esModuleInterop": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true,
+        "typeRoots": [
+            "customTypings/**",
+            "node_modules/@types"
+          ],
+        "noEmit": true
+    },
+    "include": [
+        "src/**/*.ts",
+        "customTypings/**/*.d.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
