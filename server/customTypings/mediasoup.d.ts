@@ -2,13 +2,7 @@ declare module 'mediasoup' {
 
     //JSDoc comments formatted for https://typedoc.org
 
-    //NOTE1: Review if consumer and producer can use a "base type" like Endpoint to define common properties and methods. As this concept is not reflected in documentation, maybe is problematic
-
-    //NOTE2: Review if repeat on("event") in subclasses can be avoided. Maybe creating a method on(string) in superclass and redeclaring it in subclases. Transport > WebRtcTransport.
-
-    //NOTE3: Maybe kind ("audio" | "video" can be defined as an explicit type MediaKind.)
-
-    //NOTE4: Some events in observer property are the same than some events of object itself (I don't know whay this duality). Check y duplication can be avoided.
+    //NOTE3: Define MediaKind enum ("audio" | "video") if it is finally reified in documentation
 
     //NOTE5: It is not possible to have simple inheritance for events due to limitation in TypeScript (https://github.com/Microsoft/TypeScript/issues/10229)
 
@@ -22,7 +16,7 @@ declare module 'mediasoup' {
         readonly version: string;
 
         /**An event emitter that allows the application (or third party libraries) monitor Worker instances created by the application. See the Observer Events section below. */
-        readonly observer: MediaSoupObserver; //TODO: Extends EventEmitter definition.
+        readonly observer: Readonly<MediaSoupObserver>; //TODO: Extends EventEmitter definition.
 
         /**Creates a new worker with the given settings. */
         createWorker(options: WorkerSettings): Promise<Worker>;
@@ -78,7 +72,7 @@ declare module 'mediasoup' {
         readonly closed: boolean;
 
         /**Observer events */
-        readonly observer: WorkerObserver;
+        readonly observer: Readonly<WorkerObserver>;
 
         /**Closes the worker. Triggers a "workerclose" event in all its routers.*/
         close(): void;
@@ -118,10 +112,10 @@ declare module 'mediasoup' {
         readonly closed: boolean;
 
         /**An Object with the RTP capabilities of the router. These capabilities are typically needed by mediasoup clients to compute their sending RTP parameters. Check the RTP Parameters and Capabilities section for more details.*/
-        readonly rtpCapabilities: RtpCapabilities;
+        readonly rtpCapabilities: Readonly<RtpCapabilities>;
 
         /**Observer events */
-        readonly observer: RouterObserver;
+        readonly observer: Readonly<RouterObserver>;
 
         /**Closes the router. Triggers a "routerclose" event in all its transports and also "routerclose" event in all its RTP observers.*/
         close(): void;
@@ -251,11 +245,11 @@ declare module 'mediasoup' {
         /**Whether the transport is closed.*/
         readonly closed: boolean;
         
-        /**Custom data Object provided by the application in the transport factory method. The app can modify its content at any time.*/
+        /**Custom data Object provided by the application in the transport factory method. The app can modify its content at any time.*/ //TODO Is readonly or not?
         readonly data: any;
         
         /**Transport observer*/
-        readonly observer: TransportObserver;
+        readonly observer: Readonly<TransportObserver>;
 
         /**Closes the transport. Triggers a "transportclose" event in all its producers and also "transportclose" event in all its consumers.*/
         close(): void;
@@ -435,22 +429,22 @@ declare module 'mediasoup' {
         readonly iceRole: "controlled";
 
         /**Local ICE parameters. */
-        readonly iceParameters: IceParameters;
+        readonly iceParameters: Readonly<IceParameters>;
 
         /**Local ICE candidates. */
-        readonly iceCandidates: IceCandidate[];
+        readonly iceCandidates: ReadonlyArray<IceCandidate[]>;
 
         /**Current ICE state.*/
-        readonly iceState: IceState;
+        readonly iceState: Readonly<IceState>;
 
         /**The selected transport tuple if ICE is in “connected” or “completed” state. It is undefined if ICE is not established (no working candidate pair was found).*/
-        readonly iceSelectedTuple: TransportTuple;
+        readonly iceSelectedTuple: Readonly<TransportTuple>;
 
         /**Local DTLS parameters.*/
-        readonly dtlsParameters: DtlsParameters;
+        readonly dtlsParameters: Readonly<DtlsParameters>;
 
         /**Current DTLS state.*/
-        readonly dtlsState: DtlsState;
+        readonly dtlsState: Readonly<DtlsState>;
 
         /**The remote certificate in PEM format. It is set once the DTLS state becomes “connected”. The application may want to inspect the remote certificate for authorization purposes by using some certificates utility such as the Node pem module.*/
         readonly dtlsRemoteCert: string;
@@ -459,10 +453,10 @@ declare module 'mediasoup' {
         readonly sctpParameters: string;
 
         /**Current SCTP state.*/
-        readonly sctpState: SctpState;
+        readonly sctpState: Readonly<SctpState>;
 
         /**WebRtcTransportTransport observer*/
-        readonly observer: WebRtcTransportObserver;
+        readonly observer: Readonly<WebRtcTransportObserver>;
 
         /**Provides the WebRTC transport with the endpoint parameters. */
         connect(options: { dtlsParameters: DtlsParameters }): Promise<void>;
@@ -562,18 +556,18 @@ declare module 'mediasoup' {
     export interface PlainRtpTransport extends Transport {
 
         /**The transport tuple. If RTCP-mux is enabled (rtcpMux is set), this tuple refers to both RTP and RTCP. */
-        readonly tuple: TransportTuple;
+        readonly tuple: Readonly<TransportTuple>;
 
         /**The transport tuple for RTCP. If RTCP-mux is enabled (rtcpMux is set), its value is undefined. */
-        readonly rtcpTuple: TransportTuple;
+        readonly rtcpTuple: Readonly<TransportTuple>;
 
         /**Local SCTP parameters. */
-        readonly sctpParameters: TransportSctpParameters;
+        readonly sctpParameters: Readonly<TransportSctpParameters>;
 
         /**Current SCTP state. */
-        readonly sctpState: SctpState;
+        readonly sctpState: Readonly<SctpState>;
 
-        readonly observer: PlainRtpTransportObserver;
+        readonly observer: Readonly<PlainRtpTransportObserver>;
 
         /**Provides the plain RTP transport with the endpoint parameters. It must not be called when comedia mode is enabled (in this case the remote media address will be detected dynamically) or when multiSource is set. <pr>
          * ip: string: Remote IPv4 or IPv6.
@@ -641,15 +635,15 @@ declare module 'mediasoup' {
 
         /**The transport tuple. It refers to both RTP and RTCP since pipe transports use RTCP-mux by design. Once the pipe transport is created, transport.tuple will contain information about its localIp,  localPort and protocol.
         Information about remoteIp and remotePort will be set after calling connect() method.*/
-        readonly tuple: TransportTuple;
+        readonly tuple: Readonly<TransportTuple>;
 
         /**Local SCTP parameters. */
-        readonly sctpParameters: TransportSctpParameters; //TODO: Doc has a typo indicating SctpParameters;
+        readonly sctpParameters: Readonly<TransportSctpParameters>; //TODO: Doc has a typo indicating SctpParameters;
 
         /**Current SCTP state. */
-        readonly sctpState: SctpState;
+        readonly sctpState: Readonly<SctpState>;
 
-        readonly observer: PipeTransportObserver;
+        readonly observer: Readonly<PipeTransportObserver>;
 
         /**Provides the pipe RTP transport with the remote parameters.*/
         connect(param: { ip: string; port: number }): Promise<void>;
@@ -750,21 +744,21 @@ declare module 'mediasoup' {
         readonly kind: "audio" | "video";
 
         /**Producer RTP parameters.*/
-        readonly rtpParameters: RtpSendParameters;
+        readonly rtpParameters: Readonly<RtpSendParameters>;
 
         /**The RTC transmission type.*/
-        readonly type: ProducerType;
+        readonly type: Readonly<ProducerType>;
 
         /**Whether the producer is paused.*/
         readonly paused: boolean;
 
         /**The score of each RTP stream being received, representing their tranmission quality.*/
-        readonly score: ProducerRtpStreamScore[];
+        readonly score: ReadonlyArray<ProducerRtpStreamScore[]>;
 
-        /**Custom data Object provided by the application in the producer factory method. The app can modify its content at any time.*/
+        /**Custom data Object provided by the application in the producer factory method. The app can modify its content at any time.*/ //TODO: Is readonly or not.
         readonly appData: any;
 
-        readonly observer: ProducerObserver;
+        readonly observer: Readonly<ProducerObserver>;
 
         /**Closes the producer. Triggers a “producerclose” event in all its associated consumers.*/
         close(): void;
@@ -836,10 +830,10 @@ declare module 'mediasoup' {
     export interface ConsumerRtpStreamScore {
         
         /**Score of the RTP stream in the consumer (from 0 to 10) representing its transmission quality.*/
-        score: number;
+        score: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
         /**Score of the currently selected RTP stream in the associated producer (from 0 to 10) representing its transmission quality*/
-        producerScore: number;
+        producerScore:  0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
     }
 
     /**ConsumerType
@@ -864,10 +858,10 @@ declare module 'mediasoup' {
         readonly kind: "audio" | "video";
 
         /**Consumer RTP parameters. */
-        readonly rtpParameters: RtpReceiveParameters;
+        readonly rtpParameters: Readonly<RtpReceiveParameters>;
 
         /**The RTC transmission type.*/
-        readonly type: ConsumerType;
+        readonly type: Readonly<ConsumerType>;
 
         /**Whether the consumer is paused. It does not take into account whether the associated producer is paused. */
         readonly paused: boolean;
@@ -876,10 +870,10 @@ declare module 'mediasoup' {
         readonly producerPaused: boolean;
 
         /**The score of the RTP stream being sent, representing its tranmission quality.*/
-        readonly score: ConsumerRtpStreamScore;
+        readonly score: Readonly<ConsumerRtpStreamScore>;
 
         /**Current spatial and temporal layers (for simulcast and SVC consumers). It's null if no layers are being sent to the consuming endpoint.*/
-        readonly currentLayers: ConsumerLayers;
+        readonly currentLayers: Readonly<ConsumerLayers>;
 
         /**Custom data Object provided by the application in the consumer factory method. The app can modify its content at any time.*/
         readonly appData: any;
@@ -975,7 +969,7 @@ declare module 'mediasoup' {
         readonly closed: boolean;
 
         /**The SCTP stream parameters.*/
-        readonly sctpStreamParameters: SctpStreamParameters;
+        readonly sctpStreamParameters: Readonly<SctpStreamParameters>;
 
         /**The data producer label.*/
         readonly label: string;
@@ -986,7 +980,7 @@ declare module 'mediasoup' {
         /**Custom data Object provided by the application in the producer factory method. The app can modify its content at any time.*/
         readonly appData: any;
 
-        observer: DataProducerObserver;
+        readonly observer: DataProducerObserver;
 
         /**Closes the producer. Triggers a “dataproducerclose” event in all its associated consumers.*/
         close(): void;
@@ -1024,7 +1018,7 @@ declare module 'mediasoup' {
         readonly closed: boolean;
 
         /**The SCTP stream parameters.*/
-        readonly sctpStreamParameters: SctpStreamParameters;
+        readonly sctpStreamParameters: Readonly<SctpStreamParameters>;
 
         /**The data producer label.*/
         readonly label: string;
@@ -1035,7 +1029,7 @@ declare module 'mediasoup' {
         /**Custom data Object provided by the application in the data consumer factory method. The app can modify its content at any time.*/
         readonly appData: any;
 
-        observer: DataConsumerObserver;
+        readonly observer: DataConsumerObserver;
 
         /**Closes the data consumer.*/
         close(): void;
