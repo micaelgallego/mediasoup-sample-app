@@ -12,21 +12,21 @@ declare module "mediasoup-client" {
         sctpStreamParameters: SctpStreamParameters;
         label?: string;
         protocol?: string;
-        appData?: Record<any, any>;
+        appData?: any;
     }
 
     export interface DataConsumer {
         // Properties
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#DataConsumer-properties
-        id: Readonly<string>;
-        dataProducerId: Readonly<string>;
-        closed: Readonly<boolean>;
-        sctpStreamParameters: SctpStreamParameters;
-        readyState: RTCDataChannelState;
-        label: Readonly<string>;
-        protocol: Readonly<string>;
-        binaryType: Readonly<"blob" | "arrayBuffer">;
-        appData: Readonly<Record<any, any>>;
+        readonly id: string;
+        readonly dataProducerId: string;
+        readonly closed: boolean;
+        readonly sctpStreamParameters: Readonly<SctpStreamParameters>;
+        readonly readyState: Readonly<RTCDataChannelState>;
+        readonly label: string;
+        readonly protocol: string;
+        readonly binaryType: "blob" | "arrayBuffer";
+        readonly appData: any;
 
         // Methods
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#DataConsumer-methods
@@ -34,8 +34,8 @@ declare module "mediasoup-client" {
 
         // Events
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#DataConsumer-events
-        on(event: "transportclose" | "open", cb: () => void): void;
-        on(event: "error", cb: (error: any) => void): void;
-        on(event: "message", cb: (data: string | Blob | ArrayBuffer) => void): void;
+        on(event: "transportclose" | "open", handler: () => void): void;
+        on(event: "error", handler: (error: any) => void): void;
+        on(event: "message", handler: (data: string | Blob | ArrayBuffer) => void): void;
     }
 }

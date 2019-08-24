@@ -10,20 +10,20 @@ declare module "mediasoup-client" {
         producerId: string;
         kind: "audio" | "video";
         rtpParameters: RtpReceiveParameters;
-        appData?: Record<any, any>;
+        appData?: any;
     }
 
     export interface Consumer {
         // Properties
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Consumer-properties
-        id: Readonly<string>;
-        producerId: Readonly<string>;
-        closed: Readonly<boolean>;
-        kind: Readonly<"audio" | "video">;
-        rtpParameters: Readonly<RtpReceiveParameters>;
-        track: Readonly<MediaStreamTrack>;
-        paused: Readonly<boolean>;
-        appData: Readonly<Record<any, any>>;
+        readonly id: string;
+        readonly producerId: string;
+        readonly closed: boolean;
+        readonly kind: "audio" | "video";
+        readonly rtpParameters: Readonly<RtpReceiveParameters>;
+        readonly track: Readonly<MediaStreamTrack>;
+        readonly paused: boolean;
+        readonly appData: any;
 
         // Methods
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Consumer-methods
@@ -34,6 +34,6 @@ declare module "mediasoup-client" {
 
         // Events
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Consumer-events
-        on(event: "transportclose" | "trackended", cb: () => void): void;
+        on(event: "transportclose" | "trackended", handler: () => void): void;
     }
 }

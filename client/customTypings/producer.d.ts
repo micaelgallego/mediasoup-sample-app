@@ -10,7 +10,7 @@ declare module "mediasoup-client" {
         track: MediaStreamTrack;
         encodings?: RTCRtpEncodingParameters[];
         codecOptions?: ProducerCodecOptions;
-        appData?: Record<any, any>;
+        appData?: any;
     }
 
     // https://mediasoup.org/documentation/v3/mediasoup-client/api/#ProducerCodecOptions
@@ -27,14 +27,14 @@ declare module "mediasoup-client" {
     export interface Producer {
         // Properties
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Producer-properties
-        id: Readonly<string>;
-        closed: Readonly<boolean>;
-        kind: Readonly<"audio" | "video">;
-        track: Readonly<MediaStreamTrack>;
-        rtpParameters: Readonly<RtpSendParameters>;
-        paused: Readonly<boolean>;
-        maxSpatialLayer: Readonly<number>;
-        appData: Record<any, any>;
+        readonly id: string;
+        readonly closed: boolean;
+        readonly kind: "audio" | "video";
+        readonly track: Readonly<MediaStreamTrack>;
+        readonly rtpParameters: Readonly<RtpSendParameters>;
+        readonly paused: boolean;
+        readonly maxSpatialLayer: number;
+        readonly appData: any;
 
         // Methods
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Producer-methods
@@ -47,6 +47,6 @@ declare module "mediasoup-client" {
 
         // Events
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Producer-events
-        on(event: "transportclose" | "trackended", cb: () => void): void;
+        on(event: "transportclose" | "trackended", handler: () => void): void;
     }
 }

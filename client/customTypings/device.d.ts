@@ -19,10 +19,10 @@ declare module "mediasoup-client" {
         // Properties
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Device-properties
 
-        handlerName: Readonly<string>;
-        loaded: Readonly<boolean>;
-        rtpCapabilities: Readonly<RtpCapabilities>;
-        sctpCapabilities: Readonly<DeviceSctpCapabilities>;
+        readonly handlerName: string;
+        readonly loaded: boolean;
+        readonly rtpCapabilities: Readonly<RtpCapabilities>;
+        readonly sctpCapabilities: Readonly<DeviceSctpCapabilities>;
 
         // Constructor
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#Device-constructor

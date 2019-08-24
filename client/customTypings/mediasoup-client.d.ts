@@ -9,9 +9,7 @@ declare module "mediasoup-client" {
 
     // Functions
     // https://mediasoup.org/documentation/v3/mediasoup-client/api/#mediasoupClient-functions
-    export function parseScalabilityMode(
-        scalabilityMode?: string,
-    ): {
+    export function parseScalabilityMode(scalabilityMode?: string): {
         spatialLayers: number;
         temporalLayers: number;
     };

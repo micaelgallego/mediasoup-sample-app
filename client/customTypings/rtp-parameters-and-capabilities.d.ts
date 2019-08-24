@@ -2,6 +2,7 @@
 
 // https://mediasoup.org/documentation/v3/mediasoup/rtp-parameters-and-capabilities
 declare module "mediasoup-client" {
+    
     // Dictionaries
     // https://mediasoup.org/documentation/v3/mediasoup/rtp-parameters-and-capabilities/#Dictionaries
 
@@ -32,7 +33,7 @@ declare module "mediasoup-client" {
         payloadType: number;
         clockRate: number;
         channels?: number;
-        parameters?: Record<any, any>;
+        parameters?: any;
         rtcpFeedback?: RtcpFeedback[];
     }
 
@@ -46,7 +47,7 @@ declare module "mediasoup-client" {
     export interface RtpEncodingParameters {
         ssrc?: number;
         rid?: string;
-        rtx: Record<any, any>;
+        rtx: any;
         dtx?: boolean;
         scalabilityMode?: string;
     }
@@ -56,7 +57,7 @@ declare module "mediasoup-client" {
         uri: string;
         id: number;
         encrypt?: boolean;
-        parameters?: Record<any, any>;
+        parameters?: any;
     }
 
     // https://mediasoup.org/documentation/v3/mediasoup/rtp-parameters-and-capabilities/#RtcpParameters
@@ -72,7 +73,7 @@ declare module "mediasoup-client" {
         preferredPayloadType: number;
         clockRate: number;
         channels?: number;
-        parameters?: Record<any, any>;
+        parameters?: any;
     }
 
     // https://mediasoup.org/documentation/v3/mediasoup/rtp-parameters-and-capabilities/#RtpHeaderExtension

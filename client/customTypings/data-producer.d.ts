@@ -12,21 +12,21 @@ declare module "mediasoup-client" {
         priority?: RTCPriorityType;
         label?: string;
         protocol?: string;
-        appData?: Record<any, any>;
+        appData?: any;
     }
 
     export interface DataProducer {
         // Properties
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#DataProducer-properties
-        id: Readonly<string>;
-        closed: Readonly<boolean>;
-        sctpStreamParameters: Readonly<SctpStreamParameters>;
-        readyState: Readonly<RTCDataChannelState>;
-        label: Readonly<string>;
-        protocol: Readonly<string>;
-        bufferedAmount: Readonly<number>;
-        bufferedAmountLowThreshold: Readonly<number>;
-        appData: Readonly<Record<any, any>>;
+        readonly id: string;
+        readonly closed: boolean;
+        readonly sctpStreamParameters: Readonly<SctpStreamParameters>;
+        readonly readyState: Readonly<RTCDataChannelState>;
+        readonly label: string;
+        readonly protocol: string;
+        readonly bufferedAmount: number;
+        readonly bufferedAmountLowThreshold: number;
+        readonly appData: any;
 
         // Methods
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#DataProducer-methods
@@ -35,6 +35,6 @@ declare module "mediasoup-client" {
 
         // Events
         // https://mediasoup.org/documentation/v3/mediasoup-client/api/#DataProducer-events
-        on(event: "transportclose", cb: () => any): void;
+        on(event: "transportclose", handler: () => any): void;
     }
 }

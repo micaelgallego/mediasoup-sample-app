@@ -24,11 +24,7 @@ declare module "mediasoup-client" {
     }
 
     // https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportDtlsRole
-    export enum DtlsRole {
-        AUTO = "auto",
-        CLIENT = "client",
-        SERVER = "server",
-    }
+    export type DtlsRole = "auto" | "client" | "server";
 
     // https://mediasoup.org/documentation/v3/mediasoup/api/#WebRtcTransportDtlsFingerprints
     export interface DtlsFingerprints {
