@@ -1,11 +1,13 @@
 declare module 'mediasoup' {
 
+    import { EventEmitter } from "events";
+
     //NOTE: It is not possible to have simple inheritance for events due to limitation in TypeScript (https://github.com/Microsoft/TypeScript/issues/10229)
 
     //TODO
     // X Define MediaKind enum ("audio" | "video") if it is finally reified in documentation
-    // * It is useful to extend from EventEmitter in observers?
-    // * Find a way to document method parameters defined as objects
+    // X It is useful to extend from EventEmitter in observers?
+    // X Find a way to document method parameters defined as objects. Putting the commment on top of the property in params object is not reflected in VSCode GUI. It would be good to visit while exploring
     // * Custom data in transports or consumers/producers is really readonly or can be changed? (Contradictory docs)
     // * In documentation, PipeTransport property 'sctpParameters' is of type SctpParameters, but looking for definition is of type TransportSctpParameters. Where is the type?
     // * Property 'direction' in RtpHeaderExtension is of type '"sendrecv" | "sendonly" | "recvonly"' instead of plain string. It is ok?
@@ -34,9 +36,9 @@ declare module 'mediasoup' {
         parseScalabilityMode(scalabilityMode?: string): ScalabilityMode;
     }
 
-    export interface MediaSoupObserver {
+    export interface MediaSoupObserver extends EventEmitter {
         /**Emitted when a new worker is created. */
-        on(eventType: "newworker", handler: (worker: Worker) => void): void;
+        on(eventType: "newworker", handler: (worker: Worker) => void): this;
     }
 
     export interface ScalabilityMode {
@@ -93,13 +95,13 @@ declare module 'mediasoup' {
         on(eventType: "died", handler: () => void): void;
     }
 
-    export interface WorkerObserver {
+    export interface WorkerObserver extends EventEmitter {
         
         /**Emitted when the worker is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
         
         /**Emitted when a new router is created.*/
-        on(eventType: "newrouter", handler: (router: Router) => void): void;
+        on(eventType: "newrouter", handler: (router: Router) => void): this;
     }
 
     /**Feature codecs such as RTX MUST NOT be placed into the mediaCodecs list. If preferredPayloadType is given in a RtpCodecCapability (although it's unnecessary) it's extremely recommended to use a value in the 96-127 range. */
@@ -169,13 +171,13 @@ declare module 'mediasoup' {
         on(eventType: "workerclose", handler: () => void): void;
     }
 
-    export interface RouterObserver {
+    export interface RouterObserver extends EventEmitter {
 
         /**Emitted when the router is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
 
         /**Emitted when a new transport is created.*/
-        on(eventType: "newtransport", handler: (transport: Transport) => void): void;
+        on(eventType: "newtransport", handler: (transport: Transport) => void): this;
     }
 
     export interface TransportListenIp {
@@ -279,22 +281,22 @@ declare module 'mediasoup' {
         on(eventType: "routerclose", handler: () => void): void;
     }
 
-    export interface TransportObserver {
+    export interface TransportObserver extends EventEmitter {
        
         /**Emitted when the transport is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
        
         /**Emitted when a new producer is created.*/
-        on(eventType: "newproducer", handler: (producer: Producer) => void): void;
+        on(eventType: "newproducer", handler: (producer: Producer) => void): this;
        
         /**Emitted when a new consumer is created.*/
-        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): void;
+        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): this;
        
         /**Emitted when a new data producer is created.*/
-        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): void;
+        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): this;
        
         /**Emitted when a new data consumer is created.*/
-        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): void;
+        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): this;
     }
 
     /**Both initialAvailableOutgoingBitrate and minimumAvailableOutgoingBitrate are just applied when the consumer endpoint supports REMB or Transport-CC.<br>
@@ -465,7 +467,7 @@ declare module 'mediasoup' {
         readonly observer: Readonly<WebRtcTransportObserver>;
 
         /**Provides the WebRTC transport with the endpoint parameters. */
-        connect(options: { dtlsParameters: DtlsParameters }): Promise<void>;
+        connect(options: {dtlsParameters: DtlsParameters }): Promise<void>;
 
         /**Set maximum incoming bitrate for media streams sent by the remote endpoint over this WebRTC transport. This method just works when REMB is available in the remote sender.*/
         setMaxIncomingBitrate(bitrate: number): Promise<void>;
@@ -499,33 +501,33 @@ declare module 'mediasoup' {
         //--- Copy from TransportObserver ---
 
         /**Emitted when the transport is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
         
         /**Emitted when a new producer is created.*/
-        on(eventType: "newproducer", handler: (producer: Producer) => void): void;
+        on(eventType: "newproducer", handler: (producer: Producer) => void): this;
         
         /**Emitted when a new consumer is created.*/
-        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): void;
+        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): this;
         
         /**Emitted when a new data producer is created.*/
-        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): void;
+        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): this;
         
         /**Emitted when a new data consumer is created.*/
-        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): void;
+        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): this;
 
         //--- End copy from TransportObserver ---
         
         /**Emitted when the transport ICE state changes.*/
-        on(eventType: "icestatechange", handler: (iceState: IceState) => void): void;
+        on(eventType: "icestatechange", handler: (iceState: IceState) => void): this;
 
         /**Emitted after ICE state becomes “completed” and when the ICE selected tuple changes.*/
-        on(eventType: "iceselectedtuplechange", handler: (iceSelectedTuple: TransportTuple) => void): void;
+        on(eventType: "iceselectedtuplechange", handler: (iceSelectedTuple: TransportTuple) => void): this;
 
         /**Emitted when the transport DTLS state changes.*/
-        on(eventType: "dtlsstatechange", handler: (dtlsState: DtlsState) => void): void;
+        on(eventType: "dtlsstatechange", handler: (dtlsState: DtlsState) => void): this;
 
         /**Emitted when the transport SCTP state changes.*/
-        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): void;
+        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
     }
 
     /**Note that comedia mode just makes sense when the remote endpoint is gonna produce RTP on this plain RTP transport. Otherwise, if the remote endpoint does not send any RTP packet to mediasoup, there is no way to detect its remote RTP IP and port, so the endpoint won't receive any packet from mediasoup.<br>
@@ -598,24 +600,24 @@ declare module 'mediasoup' {
         //--- Copy from TransportObserver ---
 
         /**Emitted when the transport is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
         
         /**Emitted when a new producer is created.*/
-        on(eventType: "newproducer", handler: (producer: Producer) => void): void;
+        on(eventType: "newproducer", handler: (producer: Producer) => void): this;
         
         /**Emitted when a new consumer is created.*/
-        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): void;
+        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): this;
         
         /**Emitted when a new data producer is created.*/
-        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): void;
+        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): this;
         
         /**Emitted when a new data consumer is created.*/
-        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): void;
+        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): this;
 
         //--- End copy from TransportObserver ---
         
         /**Emitted when the transport SCTP state changes.*/
-        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): void;
+        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
     }
 
     export interface PipeTransportOptions {
@@ -670,24 +672,24 @@ declare module 'mediasoup' {
         //--- Copy from TransportObserver ---
 
         /**Emitted when the transport is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
         
         /**Emitted when a new producer is created.*/
-        on(eventType: "newproducer", handler: (producer: Producer) => void): void;
+        on(eventType: "newproducer", handler: (producer: Producer) => void): this;
         
         /**Emitted when a new consumer is created.*/
-        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): void;
+        on(eventType: "newconsumer", handler: (consumer: Consumer) => void): this;
         
         /**Emitted when a new data producer is created.*/
-        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): void;
+        on(eventType: "newdataproducer", handler: (dataProducer: DataProducer) => void): this;
         
         /**Emitted when a new data consumer is created.*/
-        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): void;
+        on(eventType: "newdataconsumer", handler: (dataConsumer: DataConsumer) => void): this;
 
         //--- End copy from TransportObserver ---
 
         /**Emitted when the transport SCTP state changes.*/
-        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): void;
+        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
 
     }
 
