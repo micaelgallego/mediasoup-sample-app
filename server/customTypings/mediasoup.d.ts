@@ -253,7 +253,7 @@ declare module 'mediasoup' {
         /**Whether the transport is closed.*/
         readonly closed: boolean;
         
-        /**Custom data Object provided by the application in the transport factory method. The app can modify its content at any time.*/ //TODO Is readonly or not?
+        /**Custom data Object provided by the application in the transport factory method. The app can modify its content at any time.*/
         readonly data: any;
         
         /**Transport observer*/
@@ -301,7 +301,7 @@ declare module 'mediasoup' {
 
     /**Both initialAvailableOutgoingBitrate and minimumAvailableOutgoingBitrate are just applied when the consumer endpoint supports REMB or Transport-CC.<br>
     If given, minimumAvailableOutgoingBitrate must be higher or equal than initialAvailableOutgoingBitrate.*/
-    export interface WebRtcTransportOptions {
+    export interface WebRtcTransportOptions<AppDataT = {}> {
         
         /**Listening IP address or addresses in order of preference /**(first one is the preferred one).*/
         listenIps: TransportListenIp[] | TransportListenIp | string;
@@ -334,7 +334,7 @@ declare module 'mediasoup' {
         maxSctpMessageSize?: number;
         
         /**Custom application data.*/
-        appData?: any;
+        readonly appData?: AppDataT;
     }
 
     export interface IceParameters {
@@ -534,7 +534,7 @@ declare module 'mediasoup' {
     In other words, do not use comedia mode if the remote endpoint is not going to produce RTP but just consume it. In those cases, do not set comedia flag and call connect() with the IP and port(s) of the remote endpoint.<br>
     When multiSource is set, the producer endpoint won't receive any RTCP packet from mediasoup. Try to avoid multiSource if possible. In case of video, if the producer does not send periodic video key frames, consumers will have problems to render the video (since RTCP PLI or FIR cannot be delivered to the producer if multiSource is set).<br>
     */
-    export interface PlainRtpTransportOptions {
+    export interface PlainRtpTransportOptions<AppDataT> {
 
         /**Listening IP address. */
         listenIp: TransportListenIp | string;
@@ -557,7 +557,7 @@ declare module 'mediasoup' {
         /**Maximum size of data that can be passed to DataProducer's send() method. Default 262144*/maxSctpMessageSize?: number;
 
         /**Custom application data.Default{ }*/
-        appData?: any;
+        readonly appData?: AppDataT;
     }
 
     /**A plain RTP transport represents a network path through which plain RTP and RTCP is transmitted.*/
@@ -620,7 +620,7 @@ declare module 'mediasoup' {
         on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
     }
 
-    export interface PipeTransportOptions {
+    export interface PipeTransportOptions<AppDataT = {}> {
 
         /** Listening IP address.*/
         listenIp: TransportListenIp | string;
@@ -635,7 +635,7 @@ declare module 'mediasoup' {
         maxSctpMessageSize?: number;
 
         /** Custom application data.**/
-        appData: any;
+        readonly appData?: AppDataT;
     }
 
     /**A pipe transport represents a network path through which plain RTP and RTCP is transmitted. Pipe transports are intented to intercommunicate two Router instances collocated on the same host or on separate hosts. When calling consume() on a pipe transport, all RTP streams of the Producer are transmitted verbatim (in contrast to what happens in WebRtcTransport and PlainRtpTransport in which a single and continuos RTP stream is sent to the consuming endpoint).*/
@@ -696,7 +696,7 @@ declare module 'mediasoup' {
     export type MediaKind = "audio" | "video";
 
     /**Check the RTP Parameters and Capabilities section for more details.*/
-    export interface ProducerOptions {
+    export interface ProducerOptions<AppDataT = {}> {
     
         /**Media kind*/
         kind: MediaKind;
@@ -708,7 +708,7 @@ declare module 'mediasoup' {
         paused?: boolean;
 
         /**Custom application data.*/
-        appData?: any;
+        readonly appData?: AppDataT;
     }
 
     export interface ProducerRtpStreamScore {
@@ -742,7 +742,7 @@ declare module 'mediasoup' {
      * “svc”: A single RTP stream is received with spatial/temporal layers. */
     export type ProducerType = "simple" | "simulcast" | "svc";
 
-    export interface Producer {
+    export interface Producer<AppDataT = {}> {
 
         /**Producer identifier.*/
         readonly id: string;
@@ -765,8 +765,8 @@ declare module 'mediasoup' {
         /**The score of each RTP stream being received, representing their tranmission quality.*/
         readonly score: ReadonlyArray<ProducerRtpStreamScore[]>;
 
-        /**Custom data Object provided by the application in the producer factory method. The app can modify its content at any time.*/ //TODO: Is readonly or not.
-        readonly appData: any;
+        /**Custom data Object provided by the application in the producer factory method. The app can modify its content at any time.*/ 
+        readonly appData?: AppDataT;
 
         readonly observer: Readonly<ProducerObserver>;
 
@@ -810,7 +810,7 @@ declare module 'mediasoup' {
         on(eventType: "videoorientationchange", handler: (videoOrientation: ProducerVideoOrientation) => void): void;
     }
 
-    export interface ConsumerOptions {
+    export interface ConsumerOptions<AppDataT = {}> {
         
         /**The id of the producer to consume.*/
         producerId: string;
@@ -825,7 +825,7 @@ declare module 'mediasoup' {
         preferredLayers?: ConsumerLayers;
 
         /**Custom application data.*/
-        appData?: any;
+        readonly appData?: AppDataT;
     }
 
     export interface ConsumerLayers {
@@ -853,7 +853,7 @@ declare module 'mediasoup' {
     * “pipe”: Special type for consumers created on a PipeTransport. */
     export type ConsumerType = "simple" | "simulcast" | "svc" | "pipe";
 
-    export interface Consumer {
+    export interface Consumer<AppDataT> {
         
         /**Consumer identifier.*/
         readonly id: string;
@@ -886,7 +886,7 @@ declare module 'mediasoup' {
         readonly currentLayers: Readonly<ConsumerLayers>;
 
         /**Custom data Object provided by the application in the consumer factory method. The app can modify its content at any time.*/
-        readonly appData: any;
+        readonly appData: AppDataT;
 
         readonly observer: ConsumerObserver;
 
@@ -954,7 +954,7 @@ declare module 'mediasoup' {
 
     }
 
-    export interface DataProducerOptions {
+    export interface DataProducerOptions<AppDataT = {}> {
         
         /**	SCTP parameters defining how the endpoint is sending the data.*/
         sctpStreamParameters: SctpStreamParameters;
@@ -966,11 +966,11 @@ declare module 'mediasoup' {
         protocol?: string;
 
         /**Custom application data.*/
-        appData: any;
+        appData: AppDataT;
     }
 
     /**A data producer represents a SCTP data source being injected into a mediasoup router. It's created on top of a transport that defines how the data messages are carried.*/
-    export interface DataProducer {
+    export interface DataProducer<AppDataT = {}> {
 
         /**Data producer identifier.*/
         readonly id: string;
@@ -988,7 +988,7 @@ declare module 'mediasoup' {
         readonly protocol: string;
 
         /**Custom data Object provided by the application in the producer factory method. The app can modify its content at any time.*/
-        readonly appData: any;
+        readonly appData?: AppDataT;
 
         readonly observer: DataProducerObserver;
 
@@ -1007,16 +1007,16 @@ declare module 'mediasoup' {
         on(eventType: "close", handler: () => void): void;
     }
 
-    export interface DataConsumerOptions {
+    export interface DataConsumerOptions<AppDataT> {
         /**The id of the data producer to consume.*/
         producerId: string;
 
         /**Custom application data.*/
-        appData?: any;
+        readonly appData?: AppDataT;
     }
 
     /**A data consumer represents a SCTP data source being forwarded from a mediasoup router to an endpoint. It's created on top of a transport that defines how the data messages are carried.*/
-    export interface DataConsumer {
+    export interface DataConsumer<AppDataT = {}> {
 
         /**Data consumer identifier.*/
         readonly id: string;
@@ -1037,7 +1037,7 @@ declare module 'mediasoup' {
         readonly protocol: string;
 
         /**Custom data Object provided by the application in the data consumer factory method. The app can modify its content at any time.*/
-        readonly appData: any;
+        readonly appData?: AppDataT;
 
         readonly observer: DataConsumerObserver;
 
