@@ -1315,8 +1315,7 @@ declare module 'mediasoup' {
         preferredEncrypt?: boolean;
 
         /** If “sendrecv”, mediasoup supports sending and receiving this RTP extension. “sendonly” means that mediasoup can send (but not receive) it. “recvonly” means that mediasoup can receive (but not send) it.*/
-        direction?: "sendrecv" | "sendonly" | "recvonly";
-        //TODO Is ok fix these values? or better "string"
+        direction?: "sendrecv" | "sendonly" | "recvonly" | "inactive";
     }
     
     /**H264 codec matching rules are complex and involve inspection of the following parameters (see the RFC 6184 for more details)*/
