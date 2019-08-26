@@ -3,7 +3,7 @@ declare module 'mediasoup' {
     //NOTE: It is not possible to have simple inheritance for events due to limitation in TypeScript (https://github.com/Microsoft/TypeScript/issues/10229)
 
     //TODO
-    // * Define MediaKind enum ("audio" | "video") if it is finally reified in documentation
+    // X Define MediaKind enum ("audio" | "video") if it is finally reified in documentation
     // * It is useful to extend from EventEmitter in observers?
     // * Find a way to document method parameters defined as objects
     // * Custom data in transports or consumers/producers is really readonly or can be changed? (Contradictory docs)
@@ -691,11 +691,13 @@ declare module 'mediasoup' {
 
     }
 
+    export type MediaKind = "audio" | "video";
+
     /**Check the RTP Parameters and Capabilities section for more details.*/
     export interface ProducerOptions {
     
-        /**Media kind (“audio” or “video”) */
-        kind: "audio" | "video";
+        /**Media kind*/
+        kind: MediaKind;
 
         /**RTP parameters defining what the endpoint is sending.*/
         rtpParameters: RtpSendParameters;
@@ -746,8 +748,8 @@ declare module 'mediasoup' {
         /**Whether the producer is closed.*/
         readonly closed: boolean;
 
-        /**The media kind (“audio” or “video”).*/
-        readonly kind: "audio" | "video";
+        /**The media kind.*/
+        readonly kind: MediaKind;
 
         /**Producer RTP parameters.*/
         readonly rtpParameters: Readonly<RtpSendParameters>;
@@ -861,7 +863,7 @@ declare module 'mediasoup' {
         readonly closed: boolean;
 
         /**The media kind (“audio” or “video”).*/
-        readonly kind: "audio" | "video";
+        readonly kind: MediaKind;
 
         /**Consumer RTP parameters. */
         readonly rtpParameters: Readonly<RtpReceiveParameters>;
@@ -1273,7 +1275,7 @@ declare module 'mediasoup' {
     export interface RtpCodecCapability {
 
         /**	Media kind (“audio” or “video”).*/
-        kind: "audio" | "video";
+        kind: MediaKind;
         
         /**The codec MIME media type/subtype (e.g. “audio/opus”, “video/VP8”).*/
         mimeType: string;
@@ -1299,7 +1301,7 @@ declare module 'mediasoup' {
     export interface RtpHeaderExtension {
 
         /**Media kind (“audio” or “video”). If unset, it's valid for all kinds.	Default any media kind*/
-        kind?: "audio" | "video";
+        kind?: MediaKind;
 
         /**The URI of the RTP header extension, as defined in RFC 5285.*/
         uri: string;
