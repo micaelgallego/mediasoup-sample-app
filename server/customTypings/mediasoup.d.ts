@@ -8,8 +8,8 @@ declare module 'mediasoup' {
     // X Define MediaKind enum ("audio" | "video") if it is finally reified in documentation
     // X It is useful to extend from EventEmitter in observers?
     // X Find a way to document method parameters defined as objects. Putting the commment on top of the property in params object is not reflected in VSCode GUI. It would be good to visit while exploring
-    // * Custom data in transports or consumers/producers is really readonly or can be changed? (Contradictory docs)
-    // * In documentation, PipeTransport property 'sctpParameters' is of type SctpParameters, but looking for definition is of type TransportSctpParameters. Where is the type?
+    // X Custom data in transports or consumers/producers is really readonly or can be changed? (Contradictory docs)
+    // In documentation, PipeTransport property 'sctpParameters' is of type SctpParameters, but looking for definition is of type TransportSctpParameters. Where is the type?
     // * Property 'direction' in RtpHeaderExtension is of type '"sendrecv" | "sendonly" | "recvonly"' instead of plain string. It is ok?
     // listenIps property in WebRtcTransportOptions is of type 'TransportListenIp[] | TransportListenIp | string;'. But I've tested passing only an object of TransportListenIp and raises an error "missing listenIps".
 
@@ -27,7 +27,7 @@ declare module 'mediasoup' {
         readonly observer: Readonly<MediaSoupObserver>; //TODO: Extends EventEmitter definition.
 
         /**Creates a new worker with the given settings. */
-        createWorker(options: WorkerSettings): Promise<Worker>;
+        createWorker<AppDataT>(options: WorkerSettings): Promise<Worker>;
 
         /**Returns a cloned copy of the mediasoup supported RTP capabilities, specifically the content of the mediasoup/lib/supportedRtpCapabilities.js file. */
         getSupportedRtpCapabilities(): RtpCapabilities;
@@ -129,13 +129,13 @@ declare module 'mediasoup' {
         close(): void;
 
         /**Creates a new WebRTC transport.*/
-        createWebRtcTransport(options: WebRtcTransportOptions): Promise<WebRtcTransport>
+        createWebRtcTransport<AppDataT extends Record<any,any>>(options: WebRtcTransportOptions<AppDataT>): Promise<WebRtcTransport<AppDataT>>
 
         /**Creates a new plain RTP transport.*/
-        createPlainRtpTransport(options: PlainRtpTransportOptions): Promise<PlainRtpTransport>
+        createPlainRtpTransport<AppDataT extends Record<any,any>>(options: PlainRtpTransportOptions<AppDataT>): Promise<PlainRtpTransport<AppDataT>>
 
         /**Creates a new pipe transport.*/
-        createPipeTransport(options: PipeTransportOptions): Promise<PipeTransport>
+        createPipeTransport<AppDataT extends Record<any,any>>(options: PipeTransportOptions<AppDataT>): Promise<PipeTransport<AppDataT>>
 
         /**Pipes the given media or data producer into another router in the same host. It creates an underlying PipeTransport (if not previously created) that interconnects both routers.<br>
         This is specially useful to expand broadcasting capabilities (one to many) by interconnecting different routers that run in separate workers (so in different CPU cores).
@@ -245,7 +245,7 @@ declare module 'mediasoup' {
     * PlainRtpTransport<br>
     * PipeTransport<br>
     */
-    export interface Transport {
+    export interface Transport<AppDataT extends Record<any,any> = Record<any,any>> {
         
         /**Transport identifier.*/
         readonly id: string;
@@ -254,7 +254,7 @@ declare module 'mediasoup' {
         readonly closed: boolean;
         
         /**Custom data Object provided by the application in the transport factory method. The app can modify its content at any time.*/
-        readonly data: any;
+        readonly appData: AppDataT;
         
         /**Transport observer*/
         readonly observer: Readonly<TransportObserver>;
@@ -266,16 +266,16 @@ declare module 'mediasoup' {
         getStats(): Promise<any[]>
 
         /**Instructs the transport to receive audio or video RTP (or SRTP depending on the transport class). This is the way to inject media into mediasoup.*/
-        produce(options: ProducerOptions): Promise<Producer>;
+        produce<AppDataT extends Record<any,any>>(options: ProducerOptions<AppDataT>): Promise<Producer<AppDataT>>;
 
         /**Instructs the transport to send audio or video RTP (or SRTP depending on the transport class). This is the way to extract media from mediasoup.*/
-        consume(options: ConsumerOptions): Promise<Consumer>;
+        consume<AppDataT extends Record<any,any>>(options: ConsumerOptions<AppDataT>): Promise<Consumer<AppDataT>>;
 
         /**Instructs the transport to receive data via SCTP. This is the way to inject data into mediasoup.*/
-        produceData(options: DataProducerOptions): Promise<DataProducer>
+        produceData<AppDataT extends Record<any,any>>(options: DataProducerOptions<AppDataT>): Promise<DataProducer<AppDataT>>
 
         /**Instructs the transport to send data via SCTP. This is the way to extract data from mediasoup.*/
-        produceData(options: DataConsumerOptions): Promise<DataConsumer>
+        consumeData<AppDataT extends Record<any,any>>(options: DataConsumerOptions<AppDataT>): Promise<DataConsumer<AppDataT>>
 
         /**Emitted when the router this transport belongs to is closed for whatever reason. The transport itself is also closed. A "transportclose" event is triggered in all its producers and a "transportclose" event is triggered in all its consumers.*/
         on(eventType: "routerclose", handler: () => void): void;
@@ -301,7 +301,7 @@ declare module 'mediasoup' {
 
     /**Both initialAvailableOutgoingBitrate and minimumAvailableOutgoingBitrate are just applied when the consumer endpoint supports REMB or Transport-CC.<br>
     If given, minimumAvailableOutgoingBitrate must be higher or equal than initialAvailableOutgoingBitrate.*/
-    export interface WebRtcTransportOptions<AppDataT = {}> {
+    export interface WebRtcTransportOptions<AppDataT extends Record<any,any> = Record<any,any>> {
         
         /**Listening IP address or addresses in order of preference /**(first one is the preferred one).*/
         listenIps: TransportListenIp[] | TransportListenIp | string;
@@ -334,7 +334,7 @@ declare module 'mediasoup' {
         maxSctpMessageSize?: number;
         
         /**Custom application data.*/
-        readonly appData?: AppDataT;
+        appData?: AppDataT;
     }
 
     export interface IceParameters {
@@ -431,7 +431,7 @@ declare module 'mediasoup' {
 
     /**A WebRTC transport represents a network path negotiated by both, a WebRTC endpoint and mediasoup, via ICE and DTLS procedures. A WebRTC transport may be used to receive media, to send media or to both receive and send. There is no limitation in mediasoup. However, due to their design, mediasoup-client and libmediasoupclient require separate WebRTC transports for sending and receiving.<br>
     The WebRTC transport implementation of mediasoup is ICE Lite, meaning that it does not initiate ICE connections but expects ICE Binding Requests from endpoints.*/
-    export interface WebRtcTransport extends Transport {
+    export interface WebRtcTransport<AppDataT extends Record<any,any> = Record<any,any>> extends Transport<AppDataT> {
 
         /**Local ICE role. Due to the mediasoup ICE Lite design, this is always “controlled”. */
         readonly iceRole: "controlled";
@@ -534,7 +534,7 @@ declare module 'mediasoup' {
     In other words, do not use comedia mode if the remote endpoint is not going to produce RTP but just consume it. In those cases, do not set comedia flag and call connect() with the IP and port(s) of the remote endpoint.<br>
     When multiSource is set, the producer endpoint won't receive any RTCP packet from mediasoup. Try to avoid multiSource if possible. In case of video, if the producer does not send periodic video key frames, consumers will have problems to render the video (since RTCP PLI or FIR cannot be delivered to the producer if multiSource is set).<br>
     */
-    export interface PlainRtpTransportOptions<AppDataT> {
+    export interface PlainRtpTransportOptions<AppDataT extends Record<any,any> = Record<any,any>> {
 
         /**Listening IP address. */
         listenIp: TransportListenIp | string;
@@ -561,7 +561,7 @@ declare module 'mediasoup' {
     }
 
     /**A plain RTP transport represents a network path through which plain RTP and RTCP is transmitted.*/
-    export interface PlainRtpTransport extends Transport {
+    export interface PlainRtpTransport<AppDataT extends Record<any,any> = Record<any,any>> extends Transport<AppDataT> {
 
         /**The transport tuple. If RTCP-mux is enabled (rtcpMux is set), this tuple refers to both RTP and RTCP. */
         readonly tuple: Readonly<TransportTuple>;
@@ -620,7 +620,7 @@ declare module 'mediasoup' {
         on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
     }
 
-    export interface PipeTransportOptions<AppDataT = {}> {
+    export interface PipeTransportOptions<AppDataT extends Record<any,any> = Record<any,any>> {
 
         /** Listening IP address.*/
         listenIp: TransportListenIp | string;
@@ -639,7 +639,7 @@ declare module 'mediasoup' {
     }
 
     /**A pipe transport represents a network path through which plain RTP and RTCP is transmitted. Pipe transports are intented to intercommunicate two Router instances collocated on the same host or on separate hosts. When calling consume() on a pipe transport, all RTP streams of the Producer are transmitted verbatim (in contrast to what happens in WebRtcTransport and PlainRtpTransport in which a single and continuos RTP stream is sent to the consuming endpoint).*/
-    export interface PipeTransport extends Transport {
+    export interface PipeTransport<AppDataT extends Record<any,any> = Record<any,any>> extends Transport<AppDataT> {
 
         /**The transport tuple. It refers to both RTP and RTCP since pipe transports use RTCP-mux by design. Once the pipe transport is created, transport.tuple will contain information about its localIp,  localPort and protocol.
         Information about remoteIp and remotePort will be set after calling connect() method.*/
@@ -696,7 +696,7 @@ declare module 'mediasoup' {
     export type MediaKind = "audio" | "video";
 
     /**Check the RTP Parameters and Capabilities section for more details.*/
-    export interface ProducerOptions<AppDataT = {}> {
+    export interface ProducerOptions<AppDataT extends Record<any,any> = Record<any,any>> {
     
         /**Media kind*/
         kind: MediaKind;
@@ -742,7 +742,7 @@ declare module 'mediasoup' {
      * “svc”: A single RTP stream is received with spatial/temporal layers. */
     export type ProducerType = "simple" | "simulcast" | "svc";
 
-    export interface Producer<AppDataT = {}> {
+    export interface Producer<AppDataT extends Record<any,any> = Record<any,any>> {
 
         /**Producer identifier.*/
         readonly id: string;
@@ -810,7 +810,7 @@ declare module 'mediasoup' {
         on(eventType: "videoorientationchange", handler: (videoOrientation: ProducerVideoOrientation) => void): void;
     }
 
-    export interface ConsumerOptions<AppDataT = {}> {
+    export interface ConsumerOptions<AppDataT extends Record<any,any> = Record<any,any>> {
         
         /**The id of the producer to consume.*/
         producerId: string;
@@ -853,7 +853,7 @@ declare module 'mediasoup' {
     * “pipe”: Special type for consumers created on a PipeTransport. */
     export type ConsumerType = "simple" | "simulcast" | "svc" | "pipe";
 
-    export interface Consumer<AppDataT> {
+    export interface Consumer<AppDataT extends Record<any,any> = Record<any,any>> {
         
         /**Consumer identifier.*/
         readonly id: string;
@@ -954,7 +954,7 @@ declare module 'mediasoup' {
 
     }
 
-    export interface DataProducerOptions<AppDataT = {}> {
+    export interface DataProducerOptions<AppDataT extends Record<any,any> = Record<any,any>> {
         
         /**	SCTP parameters defining how the endpoint is sending the data.*/
         sctpStreamParameters: SctpStreamParameters;
@@ -970,7 +970,7 @@ declare module 'mediasoup' {
     }
 
     /**A data producer represents a SCTP data source being injected into a mediasoup router. It's created on top of a transport that defines how the data messages are carried.*/
-    export interface DataProducer<AppDataT = {}> {
+    export interface DataProducer<AppDataT extends Record<any,any> = Record<any,any>> {
 
         /**Data producer identifier.*/
         readonly id: string;
@@ -1007,7 +1007,7 @@ declare module 'mediasoup' {
         on(eventType: "close", handler: () => void): void;
     }
 
-    export interface DataConsumerOptions<AppDataT> {
+    export interface DataConsumerOptions<AppDataT extends Record<any,any> = Record<any,any>> {
         /**The id of the data producer to consume.*/
         producerId: string;
 
@@ -1016,7 +1016,7 @@ declare module 'mediasoup' {
     }
 
     /**A data consumer represents a SCTP data source being forwarded from a mediasoup router to an endpoint. It's created on top of a transport that defines how the data messages are carried.*/
-    export interface DataConsumer<AppDataT = {}> {
+    export interface DataConsumer<AppDataT extends Record<any,any> = Record<any,any>> {
 
         /**Data consumer identifier.*/
         readonly id: string;
