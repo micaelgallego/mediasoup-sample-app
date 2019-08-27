@@ -4,16 +4,6 @@ declare module 'mediasoup' {
 
     //NOTE: It is not possible to have simple inheritance for events due to limitation in TypeScript (https://github.com/Microsoft/TypeScript/issues/10229)
 
-    //TODO
-    // X Define MediaKind enum ("audio" | "video") if it is finally reified in documentation
-    // X It is useful to extend from EventEmitter in observers?
-    // X Find a way to document method parameters defined as objects. Putting the commment on top of the property in params object is not reflected in VSCode GUI. It would be good to visit while exploring
-    // X Custom data in transports or consumers/producers is really readonly or can be changed? (Contradictory docs)
-    // In documentation, PipeTransport property 'sctpParameters' is of type SctpParameters, but looking for definition is of type TransportSctpParameters. Where is the type?
-    // * Property 'direction' in RtpHeaderExtension is of type '"sendrecv" | "sendonly" | "recvonly"' instead of plain string. It is ok?
-    // listenIps property in WebRtcTransportOptions is of type 'TransportListenIp[] | TransportListenIp | string;'. But I've tested passing only an object of TransportListenIp and raises an error "missing listenIps".
-
-
     const mediasoup: MediaSoup;
 
     export default mediasoup;
