@@ -61,7 +61,7 @@ declare module 'mediasoup' {
     export type WorkerUpdateableSettings = Pick<WorkerSettings, 'logLevel' | 'logTags'>;
 
     /**A worker represents a mediasoup C++ subprocess that runs in a single CPU core and handles Router instances.*/
-    export interface Worker {
+    export interface Worker extends EventEmitter {
 
         /**The PID of the worker process. */
         readonly pid: number;
@@ -82,7 +82,7 @@ declare module 'mediasoup' {
         createRouter(options: RouterOptions): Promise<Router>
 
         /**Emitted when the worker process unexpectedly dies. This should never happens (if it happens, it's a bug).*/
-        on(eventType: "died", handler: () => void): void;
+        on(eventType: "died", handler: () => void): this;
     }
 
     export interface WorkerObserver extends EventEmitter {
@@ -101,7 +101,7 @@ declare module 'mediasoup' {
     }
 
     /**A router enables injection, selection and forwarding of media streams through Transport instances created on it. Developers may think of a mediasoup router as if it were a "multi-party conference room", although mediasoup is much more low level than that and doesn't constrain itself to specific high level use cases (for instance, a "multi-party conference room" could involve various mediasoup routers, even in different physicals hosts).*/
-    export interface Router {
+    export interface Router extends EventEmitter {
 
         /**Router identifier.*/
         readonly id: string;
@@ -158,7 +158,7 @@ declare module 'mediasoup' {
         }): boolean;
 
         /**Emitted when the worker this router belongs to is closed for whatever reason. The router itself is also closed. A "routerclose" event is triggered in all its transports and a "routerclose" event is triggered in all its RTP observers.*/
-        on(eventType: "workerclose", handler: () => void): void;
+        on(eventType: "workerclose", handler: () => void): this;
     }
 
     export interface RouterObserver extends EventEmitter {
@@ -235,7 +235,7 @@ declare module 'mediasoup' {
     * PlainRtpTransport<br>
     * PipeTransport<br>
     */
-    export interface Transport<AppDataT extends Record<any,any> = Record<any,any>> {
+    export interface Transport<AppDataT extends Record<any,any> = Record<any,any>> extends EventEmitter {
         
         /**Transport identifier.*/
         readonly id: string;
@@ -268,7 +268,7 @@ declare module 'mediasoup' {
         consumeData<AppDataT extends Record<any,any>>(options: DataConsumerOptions<AppDataT>): Promise<DataConsumer<AppDataT>>
 
         /**Emitted when the router this transport belongs to is closed for whatever reason. The transport itself is also closed. A "transportclose" event is triggered in all its producers and a "transportclose" event is triggered in all its consumers.*/
-        on(eventType: "routerclose", handler: () => void): void;
+        on(eventType: "routerclose", handler: () => void): this;
     }
 
     export interface TransportObserver extends EventEmitter {
@@ -468,21 +468,21 @@ declare module 'mediasoup' {
         //--- Copy from Transport ---
 
         /**Emitted when the router this transport belongs to is closed for whatever reason. The transport itself is also closed. A "transportclose" event is triggered in all its producers and a "transportclose" event is triggered in all its consumers.*/
-        on(eventType: "routerclose", handler: () => void): void;
+        on(eventType: "routerclose", handler: () => void): this;
 
         //--- End copy from Transport ---
 
         /**Emitted when the transport ICE state changes.*/
-        on(eventType: "icestatechange", handler: (iceState: IceState) => void): void;
+        on(eventType: "icestatechange", handler: (iceState: IceState) => void): this;
 
         /**Emitted after ICE state becomes “completed” and when the ICE selected tuple changes.*/
-        on(eventType: "iceselectedtuplechange", handler: (iceSelectedTuple: TransportTuple) => void): void;
+        on(eventType: "iceselectedtuplechange", handler: (iceSelectedTuple: TransportTuple) => void): this;
 
         /**Emitted when the transport DTLS state changes.*/
-        on(eventType: "dtlsstatechange", handler: (dtlsState: DtlsState) => void): void;
+        on(eventType: "dtlsstatechange", handler: (dtlsState: DtlsState) => void): this;
 
         /**Emitted when the transport SCTP state changes.*/
-        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): void;
+        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
        
     }
 
@@ -575,12 +575,12 @@ declare module 'mediasoup' {
         connect(param: { ip: string; port: number; rtcpPort?: number }): Promise<void>;
 
         /**Emitted when the transport SCTP state changes.*/
-        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): void;
+        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
 
         //--- Copy from Transport
 
         /**Emitted when the router this transport belongs to is closed for whatever reason. The transport itself is also closed. A "transportclose" event is triggered in all its producers and a "transportclose" event is triggered in all its consumers.*/
-        on(eventType: "routerclose", handler: () => void): void;
+        on(eventType: "routerclose", handler: () => void): this;
 
         //--- End copy from Transport
     }
@@ -647,12 +647,12 @@ declare module 'mediasoup' {
         connect(param: { ip: string; port: number }): Promise<void>;
 
         /**Emitted when the transport SCTP state changes.*/
-        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): void;
+        on(eventType: "sctpstatechange", handler: (sctpState: SctpState) => void): this;
 
         //--- Copy from Transport
 
         /**Emitted when the router this transport belongs to is closed for whatever reason. The transport itself is also closed. A "transportclose" event is triggered in all its producers and a "transportclose" event is triggered in all its consumers.*/
-        on(eventType: "routerclose", handler: () => void): void;
+        on(eventType: "routerclose", handler: () => void): this;
 
         //--- End copy from Transport
     }
@@ -732,7 +732,7 @@ declare module 'mediasoup' {
      * “svc”: A single RTP stream is received with spatial/temporal layers. */
     export type ProducerType = "simple" | "simulcast" | "svc";
 
-    export interface Producer<AppDataT extends Record<any,any> = Record<any,any>> {
+    export interface Producer<AppDataT extends Record<any,any> = Record<any,any>> extends EventEmitter {
 
         /**Producer identifier.*/
         readonly id: string;
@@ -773,31 +773,31 @@ declare module 'mediasoup' {
         resume(): Promise<void>;
 
         /**Emitted when the transport this producer belongs to is closed for whatever reason. The producer itself is also closed. A “producerclose” event is triggered in all its associated consumers.*/
-        on(eventType: "transportclose", handler: () => void): void;
+        on(eventType: "transportclose", handler: () => void): this;
 
         /**Emitted when the producer score changes.*/
-        on(eventType: "score", handler: (score: ProducerRtpStreamScore[]) => void): void;
+        on(eventType: "score", handler: (score: ProducerRtpStreamScore[]) => void): this;
 
         /**Emitted when the video orientation changes. This is just possible if the “urn:3gpp:video-orientation” RTP extension has been negotiated in the producer RTP parameters.*/
-        on(eventType: "videoorientationchange", handler: (videoOrientation: ProducerVideoOrientation) => void): void;
+        on(eventType: "videoorientationchange", handler: (videoOrientation: ProducerVideoOrientation) => void): this;
     }
 
-    export interface ProducerObserver {
+    export interface ProducerObserver extends EventEmitter {
 
         /**Emitted when the producer is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
 
         /**Emitted when the producer is paused.*/
-        on(eventType: "pause", handler: () => void): void;
+        on(eventType: "pause", handler: () => void): this;
 
         /**Emitted when the producer is resumed.*/
-        on(eventType: "resume", handler: () => void): void;
+        on(eventType: "resume", handler: () => void): this;
 
         /**Emitted when the producer score changes.*/
-        on(eventType: "score", handler: (score: ProducerRtpStreamScore[]) => void): void;
+        on(eventType: "score", handler: (score: ProducerRtpStreamScore[]) => void): this;
 
         /**Emitted when the video orientation changes. This is just possible if the “urn:3gpp:video-orientation” RTP extension has been negotiated in the producer RTP parameters.*/
-        on(eventType: "videoorientationchange", handler: (videoOrientation: ProducerVideoOrientation) => void): void;
+        on(eventType: "videoorientationchange", handler: (videoOrientation: ProducerVideoOrientation) => void): this;
     }
 
     export interface ConsumerOptions<AppDataT extends Record<any,any> = Record<any,any>> {
@@ -843,7 +843,7 @@ declare module 'mediasoup' {
     * “pipe”: Special type for consumers created on a PipeTransport. */
     export type ConsumerType = "simple" | "simulcast" | "svc" | "pipe";
 
-    export interface Consumer<AppDataT extends Record<any,any> = Record<any,any>> {
+    export interface Consumer<AppDataT extends Record<any,any> = Record<any,any>> extends EventEmitter {
         
         /**Consumer identifier.*/
         readonly id: string;
@@ -899,19 +899,19 @@ declare module 'mediasoup' {
         requestKeyFrame(): Promise<void>
 
         /**Emitted when the transport this consumer belongs to is closed for whatever reason. The consumer itself is also closed.*/
-        on(eventType: "transportclose", handler: () => void): void;
+        on(eventType: "transportclose", handler: () => void): this;
 
         /**Emitted when the associated producer is closed for whatever reason. The consumer itself is also closed.*/
-        on(eventType: "producerclose", handler: () => void): void;
+        on(eventType: "producerclose", handler: () => void): this;
 
         /**Emitted when the associated producer is paused.*/
-        on(eventType: "producerpause", handler: () => void): void;
+        on(eventType: "producerpause", handler: () => void): this;
 
         /**Emitted when the associated producer is resumed.*/
-        on(eventType: "producerresume", handler: () => void): void;
+        on(eventType: "producerresume", handler: () => void): this;
 
         /**Emitted when the consumer score changes.*/
-        on(eventType: "score", handler: (score: ConsumerRtpStreamScore) => void): void;
+        on(eventType: "score", handler: (score: ConsumerRtpStreamScore) => void): this;
 
         /**Emitted when the spatial/temporal layers being sent to the endpoint change. Just for simulcast or SVC consumers. Current spatial and temporal layers (or null if there are no current layers).
          * 
@@ -922,25 +922,25 @@ declare module 'mediasoup' {
             * When the available bitrate of the BWE makes the consumer upgrade or downgrade the spatial and/or temporal layers.
             * When there is no available bitrate for this consumer (even for the lowest layers) so the event fires with  null as argument.
         The Node.js application can detect the latter (consumer deactivated due to not enough bandwidth) by checking if both consumer.paused and consumer.producerPaused are falsy after the consumer has emitted this event with null as argument.*/
-        on(eventType: "layerschange", handler: (layers?: ConsumerLayers) => void): void;
+        on(eventType: "layerschange", handler: (layers?: ConsumerLayers) => void): this;
     }
 
-    export interface ConsumerObserver {
+    export interface ConsumerObserver extends EventEmitter {
 
         /**Emitted when the consumer is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
 
         /**Emitted when the consumer or its associated producer is paused and, as result, the consumer becomes paused.*/
-        on(eventType: "pause", handler: () => void): void;
+        on(eventType: "pause", handler: () => void): this;
 
         /**Emitted when the consumer or its associated producer is resumed and, as result, the consumer is no longer paused.*/
-        on(eventType: "resume", handler: () => void): void;
+        on(eventType: "resume", handler: () => void): this;
 
         /**Same as the score event.*/
-        on(eventType: "score", handler: (score: ConsumerRtpStreamScore) => void): void;
+        on(eventType: "score", handler: (score: ConsumerRtpStreamScore) => void): this;
 
         /**Same as the layerschange event.*/
-        on(eventType: "layerschange", handler: (layers?: ConsumerLayers) => void): void;
+        on(eventType: "layerschange", handler: (layers?: ConsumerLayers) => void): this;
 
     }
 
@@ -960,7 +960,7 @@ declare module 'mediasoup' {
     }
 
     /**A data producer represents a SCTP data source being injected into a mediasoup router. It's created on top of a transport that defines how the data messages are carried.*/
-    export interface DataProducer<AppDataT extends Record<any,any> = Record<any,any>> {
+    export interface DataProducer<AppDataT extends Record<any,any> = Record<any,any>> extends EventEmitter {
 
         /**Data producer identifier.*/
         readonly id: string;
@@ -989,12 +989,12 @@ declare module 'mediasoup' {
         getStats(): Promise<any>;
 
         /**Emitted when the transport this data producer belongs to is closed for whatever reason. The producer itself is also closed. A “dataproducerclose” event is triggered in all its associated consumers.*/
-        on(eventType: "transportclose", handler: () => void): void;
+        on(eventType: "transportclose", handler: () => void): this;
     }
 
-    export interface DataProducerObserver {
+    export interface DataProducerObserver extends EventEmitter {
         /**Emitted when the producer is closed for whatever reason.*/
-        on(eventType: "close", handler: () => void): void;
+        on(eventType: "close", handler: () => void): this;
     }
 
     export interface DataConsumerOptions<AppDataT extends Record<any,any> = Record<any,any>> {
@@ -1006,7 +1006,7 @@ declare module 'mediasoup' {
     }
 
     /**A data consumer represents a SCTP data source being forwarded from a mediasoup router to an endpoint. It's created on top of a transport that defines how the data messages are carried.*/
-    export interface DataConsumer<AppDataT extends Record<any,any> = Record<any,any>> {
+    export interface DataConsumer<AppDataT extends Record<any,any> = Record<any,any>> extends EventEmitter {
 
         /**Data consumer identifier.*/
         readonly id: string;
@@ -1038,18 +1038,18 @@ declare module 'mediasoup' {
         getStats(): Promise<any>;
 
         /**Emitted when the transport this data consumer belongs to is closed for whatever reason. The data consumer itself is also closed.*/
-        on(eventType: "transportclose", handler: () => void): void;
+        on(eventType: "transportclose", handler: () => void): this;
 
         /**Emitted when the associated data producer is closed for whatever reason. The data consumer itself is also closed.*/
-        on(eventType: "dataproducerclose", handler: () => void): void;
+        on(eventType: "dataproducerclose", handler: () => void): this;
     }
 
-    export interface DataConsumerObserver {
-        on(eventType: "close", handler: () => void): void;
+    export interface DataConsumerObserver extends EventEmitter {
+        on(eventType: "close", handler: () => void): this;
     }
 
     /**An RTP observer inspects the media received by a set of selected producers. mediasoup implements the following RTP observer classes: AudioLevelObserver.*/
-    export interface RtpObserver {
+    export interface RtpObserver extends EventEmitter {
 
         /**RTP observer identifier.*/
         readonly id: string;
@@ -1076,7 +1076,7 @@ declare module 'mediasoup' {
         removeProducer(producer: Producer): Promise<void>;
 
         /**Emitted when the router this RTP observer belongs to is closed for whatever reason. The RTP observer itself is also closed.*/
-        on(eventType: "routerclose", handler: () => void): void;
+        on(eventType: "routerclose", handler: () => void): this;
     }
 
     /**An audio level observer monitors the volume of the selected audio producers. It just handles audio producers (if addProducer() is called with a video producer it will fail).*/
@@ -1085,11 +1085,11 @@ declare module 'mediasoup' {
         //--- Start copy from RtpObserver to circunvent limitation in TypeScript compiler (see https://github.com/Microsoft/TypeScript/issues/10229)
 
         /**Emitted when the router this RTP observer belongs to is closed for whatever reason. The RTP observer itself is also closed.*/
-        on(eventType: "routerclose", handler: () => void): void;
+        on(eventType: "routerclose", handler: () => void): this;
 
         //--- End copy ----
 
-        on(eventType: "volumes", handler: (volumes: AudioLevelObserverVolume[]) => void): void;
+        on(eventType: "volumes", handler: (volumes: AudioLevelObserverVolume[]) => void): this;
     }
 
     export interface AudioLevelObserverOptions {
