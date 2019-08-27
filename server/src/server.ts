@@ -65,8 +65,15 @@ async function runWebServer() {
   await new Promise((resolve) => {
     const { listenIp, listenPort } = config;
     webServer.listen(listenPort, listenIp, () => {
-      const listenIps = config.mediasoup.webRtcTransport.listenIps as TransportListenIp;
-      const ip = listenIps.announcedIp || listenIps.ip;
+      
+      let listenIp = config.mediasoup.webRtcTransport.listenIps[0];
+      let ip;
+      if (typeof listenIp === "string") {
+        ip = listenIp;
+      } else {
+        ip = listenIp.announcedIp || listenIp.ip;
+      }
+      
       console.log('server is running');
       console.log(`open https//${ip}:${listenPort} in your web browser`);
       resolve();

@@ -304,7 +304,7 @@ declare module 'mediasoup' {
     export interface WebRtcTransportOptions<AppDataT extends Record<any,any> = Record<any,any>> {
         
         /**Listening IP address or addresses in order of preference /**(first one is the preferred one).*/
-        listenIps: TransportListenIp[] | TransportListenIp | string;
+        listenIps: (TransportListenIp|string)[];
         
         /**Listen in UDP. Default true.*/
         enableUdp?: boolean;
